@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QDir>
+#include <QValidator>
+#include <QIntValidator>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,6 +12,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     scene = new QGraphicsScene();
     ui->graphicsView->setScene(scene);
+
+    QIntValidator* intValidator = new QIntValidator(this);
+    ui->input_x->setValidator(intValidator);
+    ui->input_y->setValidator(intValidator);
+    connect(ui->input_x, SIGNAL(textChanged(QString)), this, SLOT(on_input_x_textChanged(QString)));
+    connect(ui->input_y, SIGNAL(textChanged(QString)), this, SLOT(on_input_y_textChanged(QString)));
+
     int h=20; // размерность ячейки;
     //    test.dat комментарий названия файла. В данной работе используется статичный путь до файла, и статичная размеры сетки;
     int ii = 50;
@@ -366,3 +375,43 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_pushButton_clicked()
+{
+    // Открытие диалогового окна для выбора файла
+     QString fileName = QFileDialog::getOpenFileName(this, "Выберите файл", "", "Текстовые файлы (*.dat);; Текстовые файлы (*.txt);");
+
+     // Проверка, был ли выбран файл
+     if (fileName.isEmpty())
+         return;
+
+     // Открытие файла для чтения
+     QFile file(fileName);
+     if (!file.open(QIODevice::ReadOnly))
+         return;
+
+     // Считывание и вывод содержимого файла
+     QTextStream in(&file);
+     while (!in.atEnd()) {
+         QString line = in.readLine();
+         QStringList currentF = line.split(" ");
+         drawFromFile(currentF.at(2).toDouble());
+     }
+}
+
+void MainWindow::drawFromFile(double arg1)
+{
+    qDebug() << arg1;
+}
+
+void MainWindow::on_input_x_textChanged(const QString &newValue)
+{
+    x = newValue.toInt(); // здесь мы изменяем значение переменной x из слота on_input_x_textChanged.
+}
+
+
+void MainWindow::on_input_y_textChanged(const QString &newValue)
+{
+    y = newValue.toInt(); // здесь мы изменяем значение переменной y из слота on_input_y_textChanged.
+}
+
